@@ -20,7 +20,7 @@ public class Voting {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         Voting v = new Voting();
-        v.test1();
+        v.test2();
     }
 
     public void test1() throws IOException {
@@ -56,7 +56,6 @@ public class Voting {
     Failure happens on proposer3 right after it sends out a higher id PREPARE
     Proposers will keeping out a new proposal with higher id in every 10 seconds
      */
-
     public void test2() throws IOException, InterruptedException {
         this.proposers = new Proposer[] {
                 proposer1,
@@ -81,16 +80,15 @@ public class Voting {
         writeVotingStartTime("./src/VotingStartTime.txt", this.startTime);
         for (Proposer p : this.proposers) {
             startProposer(p);
-            maxID = Math.max(p.max_id, maxID);
         }
-        Thread.sleep(5000);
+        Thread.sleep(1000 * 2);
         proposer3.end();
     }
 
     public void setState() {
         this.proposer1.setMax_id(1);
         this.proposer2.setMax_id(10);
-        this.proposer3.setMax_id(20);
+        this.proposer3.setMax_id(11);
 
         proposer2.setIsResponseStable(false);
         proposer3.setIsResponseStable(false);

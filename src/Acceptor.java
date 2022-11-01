@@ -13,6 +13,7 @@ public class Acceptor {
     private boolean isResponseStable;
     private boolean hasRes = false;
     private HashMap<String, Integer> mapping = new HashMap<>();
+    private int messageCnt = 0;
 
     public long endTime;
 
@@ -22,82 +23,6 @@ public class Acceptor {
         settingConfig();
 
         endTime = -1;
-    }
-
-    public static void main(String[] args) {
-        Acceptor acceptor1 = new Acceptor("M4", 2014);
-        Acceptor acceptor2 = new Acceptor("M5", 2015);
-        Acceptor acceptor3 = new Acceptor("M6", 2016);
-        Acceptor acceptor4 = new Acceptor("M7", 2017);
-        Acceptor acceptor5 = new Acceptor("M8", 2018);
-        Acceptor acceptor6 = new Acceptor("M9", 2019);
-        acceptor1.setIsResponseStable(false);
-        acceptor2.setIsResponseStable(false);
-        acceptor3.setIsResponseStable(false);
-        acceptor4.setIsResponseStable(false);
-        acceptor5.setIsResponseStable(false);
-        acceptor6.setIsResponseStable(false);
-
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    acceptor1.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    acceptor2.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    acceptor3.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    acceptor4.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    acceptor5.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    acceptor6.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
     }
 
     public void settingConfig() {
@@ -122,6 +47,7 @@ public class Acceptor {
                 int sleepTime = (int) (Math.random() * 5);
                 Thread.sleep(sleepTime * 500);
             }
+            messageCnt += 1;
             Socket client = new Socket("127.0.0.1", port);
             DataOutputStream data_out = new DataOutputStream(client.getOutputStream());
             ObjectOutputStream object_out = new ObjectOutputStream(data_out);
@@ -210,7 +136,8 @@ public class Acceptor {
 
         try {
             fout = new FileOutputStream(path, false);
-            String output = this.name + " voted " + res + " at " + endTime;;
+            String messageCNT = messageCnt + " messages have been sent from " + this.name + "\n" ;
+            String output = messageCNT + this.name + " voted " + res + " at " + endTime;;
             byte[] strToBytes = output.getBytes();
             fout.write(strToBytes);
             fout.close();

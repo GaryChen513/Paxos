@@ -18,6 +18,7 @@ public class Proposer {
     private HashMap<String, Integer> mapping;
     private boolean hasRes = false;
     private boolean isAlive;
+    private int messageCnt = 0;
 
 //    public long startTime;
     public long endTime;
@@ -32,54 +33,6 @@ public class Proposer {
         settingConfig();
 
         endTime = -1;
-    }
-
-    public static void main(String[] args ) throws IOException{
-        Proposer proposer1 = new Proposer("M1", 2011);
-        Proposer proposer2 = new Proposer("M2", 2012);
-        Proposer proposer3 = new Proposer("M3", 2013);
-
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    proposer1.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    proposer2.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    proposer3.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-        proposer1.max_id = 14;
-
-        proposer1.sendingProposal();
-        proposer1.setIsResponseStable(false);
-
-        proposer2.sendingProposal();
-        proposer3.max_id = 10;
-        proposer3.sendingProposal();
-        proposer3.max_id = 19;
-        proposer3.sendingProposal();
-        proposer3.end();
     }
 
     public void settingConfig() {
@@ -111,6 +64,7 @@ public class Proposer {
      */
     public void end() throws IOException {
         if (server != null) server.close();
+        System.out.println(this.name + " proposer socket is closed");
         isAlive = false;
     }
 
@@ -119,7 +73,7 @@ public class Proposer {
     send proposal to other nodes in the cluster
      */
     public void sendingProposal() throws IOException{
-
+        if (hasRes || !isAlive) return;
         for (String key : mapping.keySet()) {
             if (key.equals(this.name) ) continue;
             int port = mapping.get(key);
@@ -130,6 +84,7 @@ public class Proposer {
             ObjectOutputStream object_out = new ObjectOutputStream(data_out);
 
             object_out.writeObject(packet);
+            messageCnt += 1;
         }
     }
 
@@ -141,6 +96,7 @@ public class Proposer {
                 int sleepTime = (int) (Math.random() * 5);
                 Thread.sleep(sleepTime * 500);
             }
+            messageCnt += 1;
 
             Socket client = new Socket("127.0.0.1", port);
             DataOutputStream data_out = new DataOutputStream(client.getOutputStream());
@@ -226,7 +182,8 @@ public class Proposer {
 
         try {
             fout = new FileOutputStream(path, false);
-            String output = this.name + " voted " + res + " at " + endTime;
+            String messageCNT = messageCnt + " messages have been sent from " + this.name + "\n" ;
+            String output = messageCNT + this.name + " voted " + res + " at " + endTime;
             byte[] strToBytes = output.getBytes();
             fout.write(strToBytes);
             fout.close();
