@@ -8,10 +8,10 @@ import java.util.HashSet;
 
 
 public class Proposer {
-    private String name;
+    public String name;
     public int max_id = 1;
     private String accepted_val;
-    private int port;
+    public int port;
     private boolean isResponseStable;
     private ServerSocket server;
     private HashSet<Integer> received_promise;
@@ -19,6 +19,10 @@ public class Proposer {
     private boolean hasRes = false;
     private boolean isAlive;
     private int messageCnt = 0;
+    private int total_num_nodes = 9;
+
+    private Acceptor[] acceptors = new Acceptor[] {};
+    private Proposer[] proposers = new Proposer[] {};
 
 //    public long startTime;
     public long endTime;
@@ -30,14 +34,16 @@ public class Proposer {
         this.received_promise = new HashSet<>();
         this.mapping = new HashMap<>();
         this.isResponseStable = true;
-        settingConfig();
 
         endTime = -1;
     }
 
-    public void settingConfig() {
-        for (int i = 4; i <= 9; i++) {
-            mapping.put("M" + i, 2010 + i);
+    public void settingConfig(Acceptor[] acceptors, Proposer[] proposers) {
+        this.acceptors = acceptors;
+        this.proposers = proposers;
+
+        for (Acceptor a: acceptors) {
+            mapping.put(a.name, a.port);
         }
     }
 
@@ -77,14 +83,18 @@ public class Proposer {
         for (String key : mapping.keySet()) {
             if (key.equals(this.name) ) continue;
             int port = mapping.get(key);
-            Socket proposer = new Socket("127.0.0.1", port);
-            Packet packet = new Packet(this.port, "PREPARE", this.max_id);
+            try {
+                Socket proposer = new Socket("127.0.0.1", port);
+                Packet packet = new Packet(this.port, "PREPARE", this.max_id);
 
-            DataOutputStream data_out = new DataOutputStream( proposer.getOutputStream());
-            ObjectOutputStream object_out = new ObjectOutputStream(data_out);
+                DataOutputStream data_out = new DataOutputStream( proposer.getOutputStream());
+                ObjectOutputStream object_out = new ObjectOutputStream(data_out);
 
-            object_out.writeObject(packet);
-            messageCnt += 1;
+                object_out.writeObject(packet);
+                messageCnt += 1;
+            } catch (Exception ex) {
+                continue;
+            }
         }
     }
 
@@ -106,7 +116,7 @@ public class Proposer {
             object_out.flush();
             client.close();
         } catch (ConnectException | InterruptedException ex) {
-            ex.printStackTrace();
+//            ex.printStackTrace();
         }
 
     }
@@ -122,7 +132,7 @@ public class Proposer {
             setAccepted_val(p.val);
         }
 
-        if (this.received_promise.size() >= 9 / 2 + 1) {
+        if (this.received_promise.size() >= total_num_nodes / 2 ) {
             Packet packet = new Packet(this.port, "PROPOSE", this.max_id, this.accepted_val);
             System.out.println("A potential consensus id is found as " + this.max_id);
             for (String key : mapping.keySet()) {
@@ -192,6 +202,8 @@ public class Proposer {
             ex.printStackTrace();
         }
     }
+
+    public void setNumOfNodes(int number) {this.total_num_nodes = number;}
 
     public void setIsResponseStable (boolean bool) {this.isResponseStable = bool;}
 

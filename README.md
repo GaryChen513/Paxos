@@ -11,5 +11,7 @@ kill program if Voting is finished (you need to stop program via log feedback on
 
 run `VotingCalculator.java`.
 
-You should obtain the execution time to last voting on VotingDuration.txt 
+You should obtain the execution time to last voting on VotingDuration.txt
+
+
 

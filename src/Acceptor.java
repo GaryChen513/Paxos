@@ -5,29 +5,38 @@ import java.net.Socket;
 import java.util.HashMap;
 
 public class Acceptor {
-    private String name;
+    public String name;
     private int max_id = -1;
     private String accepted_val = null;
     private boolean proposal_accepted = false;
-    private int port;
+    public int port;
     private boolean isResponseStable;
     private boolean hasRes = false;
     private HashMap<String, Integer> mapping = new HashMap<>();
     private int messageCnt = 0;
+    private int total_num_nodes = 9;
+
+    private Acceptor[] acceptors = new Acceptor[] {};
+    private Proposer[] proposers = new Proposer[] {};
 
     public long endTime;
 
     public Acceptor (String name, int port) {
         this.name = name;
         this.port = port;
-        settingConfig();
 
         endTime = -1;
     }
 
-    public void settingConfig() {
-        for (int i = 1; i <= 9; i++) {
-            mapping.put("M" + i, 2010 + i);
+    public void settingConfig(Acceptor[] acceptors, Proposer[] proposers) {
+        this.acceptors = acceptors;
+        this.proposers = proposers;
+
+        for (Acceptor a: acceptors) {
+            mapping.put(a.name, a.port);
+        }
+        for (Proposer p: proposers) {
+            mapping.put(p.name, p.port);
         }
     }
 
@@ -42,6 +51,7 @@ public class Acceptor {
 
     public void sendPacket(int port, Packet packet) throws IOException {
         if (hasRes) return;
+
         try {
             if (!this.isResponseStable) {
                 int sleepTime = (int) (Math.random() * 5);
@@ -71,7 +81,6 @@ public class Acceptor {
         } else {
             packet = new Packet(this.port, "PROMISE", this.max_id, this.accepted_val);
         }
-
         sendPacket(p.port, packet);
     }
 

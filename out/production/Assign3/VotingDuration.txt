@@ -1,0 +1,2 @@
+This voting takes 24186
+The amount of total message sent: 265

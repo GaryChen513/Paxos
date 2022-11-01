@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -10,20 +11,39 @@ public class Voting {
     public Proposer proposer1 = new Proposer("M1", 2011);
     public Proposer proposer2 = new Proposer("M2", 2012);
     public Proposer proposer3 = new Proposer("M3", 2013);
+    public Proposer proposer4 = new Proposer("M4", 2014);
+    public Proposer proposer5 = new Proposer("M5", 2015);
+    public Proposer proposer6 = new Proposer("M6", 2016);
+    public Proposer proposer7 = new Proposer("M7", 2017);
+    public Proposer proposer8 = new Proposer("M8", 2018);
+    public Proposer proposer9 = new Proposer("M9", 2019);
+    public Proposer proposer10 = new Proposer("M9", 2020);
 
-    public Acceptor acceptor1 = new Acceptor("M4", 2014);
-    public Acceptor acceptor2 = new Acceptor("M5", 2015);
-    public Acceptor acceptor3 = new Acceptor("M6", 2016);
-    public Acceptor acceptor4 = new Acceptor("M7", 2017);
-    public Acceptor acceptor5 = new Acceptor("M8", 2018);
-    public Acceptor acceptor6 = new Acceptor("M9", 2019);
+    public Acceptor acceptor1 = new Acceptor("M11", 2021);
+    public Acceptor acceptor2 = new Acceptor("M12", 2022);
+    public Acceptor acceptor3 = new Acceptor("M13", 2023);
+    public Acceptor acceptor4 = new Acceptor("M14", 2024);
+    public Acceptor acceptor5 = new Acceptor("M15", 2025);
+    public Acceptor acceptor6 = new Acceptor("M16", 2026);
+    public Acceptor acceptor7 = new Acceptor("M17", 2027);
+    public Acceptor acceptor8 = new Acceptor("M18", 2028);
+    public Acceptor acceptor9 = new Acceptor("M19", 2029);
+    public Acceptor acceptor10 = new Acceptor("M20", 2030);
 
     public static void main(String[] args) throws IOException, InterruptedException {
         Voting v = new Voting();
-        v.test2();
+        v.test3();
     }
 
+
+
+
+    /*
+    write tests below
+    -------------------------------------------------------------------------------------
+     */
     public void test1() throws IOException {
+        deleteAllTxtFile();
         this.proposers = new Proposer[] {
                 proposer1,
                 proposer2,
@@ -38,17 +58,17 @@ public class Voting {
                 acceptor5,
                 acceptor6
         };
+        setVotingConfig();
+        setNodeState();
 
         startProposers();
         startAcceptor();
-        setState();
 
         startTime = System.currentTimeMillis();
         writeVotingStartTime("./src/VotingStartTime.txt", this.startTime);
-        proposer1.sendingProposal();
-        proposer2.sendingProposal();
-        proposer3.sendingProposal();
-
+        for (Proposer p : proposers) {
+            p.sendingProposal();
+        }
     }
 
     /*
@@ -57,6 +77,7 @@ public class Voting {
     Proposers will keeping out a new proposal with higher id in every 10 seconds
      */
     public void test2() throws IOException, InterruptedException {
+        deleteAllTxtFile();
         this.proposers = new Proposer[] {
                 proposer1,
                 proposer2,
@@ -72,9 +93,11 @@ public class Voting {
                 acceptor6
         };
 
+        setVotingConfig();
+        setNodeState();
+
         startProposers();
         startAcceptor();
-        setState();
 
         startTime = System.currentTimeMillis();
         writeVotingStartTime("./src/VotingStartTime.txt", this.startTime);
@@ -85,20 +108,64 @@ public class Voting {
         proposer3.end();
     }
 
-    public void setState() {
-        this.proposer1.setMax_id(1);
-        this.proposer2.setMax_id(10);
-        this.proposer3.setMax_id(11);
+    public void test3() {
+        deleteAllTxtFile();
+        this.proposers = new Proposer[] {
+                proposer1,
+                proposer2,
+                proposer3,
+                proposer4,
+                proposer5,
+                proposer6
+        };
 
-        proposer2.setIsResponseStable(false);
-        proposer3.setIsResponseStable(false);
+        this.acceptors = new Acceptor[]{
+                acceptor1,
+                acceptor2,
+                acceptor3,
+                acceptor4,
+                acceptor5,
+                acceptor6,
+                acceptor7,
+                acceptor8,
+                acceptor9,
+                acceptor10
+        };
 
-        acceptor1.setIsResponseStable(false);
-        acceptor2.setIsResponseStable(false);
-        acceptor3.setIsResponseStable(false);
-        acceptor4.setIsResponseStable(false);
-        acceptor5.setIsResponseStable(false);
-        acceptor6.setIsResponseStable(false);
+        setVotingConfig();
+        setNodeState();
+
+        startProposers();
+        startAcceptor();
+
+        startTime = System.currentTimeMillis();
+        writeVotingStartTime("./src/VotingStartTime.txt", this.startTime);
+        for (Proposer p : this.proposers) {
+            startProposer(p);
+        }
+    }
+
+    /*
+    -------------------------------------------------------------------------------------
+    write test above
+     */
+    public void setVotingConfig () {
+        for (Acceptor a: acceptors) {
+            a.settingConfig(acceptors, proposers);
+        }
+        for (Proposer p: proposers) {
+            p.settingConfig(acceptors, proposers);
+            p.setNumOfNodes(acceptors.length + acceptors.length);
+        }
+
+    }
+
+    public void setNodeState() {
+        for (Proposer p : proposers) {
+            p.setMax_id((int) (Math.random() * 20));
+        }
+        boolean isStable = (int) (Math.random() * 2) == 1;
+        proposer1.setIsResponseStable(isStable);
     }
 
     public void startProposer(Proposer p) {
@@ -165,6 +232,14 @@ public class Voting {
 
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+
+    public void deleteAllTxtFile() {
+        File folder = new File("./src");
+        for (File file : folder.listFiles()) {
+            String name = file.getName();
+            if (name.endsWith(".txt")) file.delete();
         }
     }
 
