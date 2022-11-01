@@ -35,13 +35,33 @@ public class Voting {
         v.test3();
     }
 
-
-
-
     /*
     write tests below
     -------------------------------------------------------------------------------------
      */
+
+    /*
+    How to write a test:
+    1) deleteAllTxtFile();  delete existing .txt files
+
+    2) define your proposers and acceptors list with candidates initiated above
+       Note: You are only allowed to use maximum 10 proposers and 10 acceptors
+
+    3) setVotingConfig();   let every node get every other nodes involved in this voting
+       setNodeState();  where you can randomise starting proposal ID, and also randomise whether node has delay response
+
+    4) startTime = System.currentTimeMillis();  store voting starting time
+        writeVotingStartTime("./src/VotingStartTime.txt", this.startTime);  write starting time to txt file
+
+    5) for (Proposer p : this.proposers) {
+            *** use only one of two options below to start sending out proposal ***
+            p.sendingProposal(); // this is non-failure case
+            startProposer(p); // failure case
+        }
+
+    6)  any code here is up to you how you want to perform failure
+
+    */
     public void test1() throws IOException {
         deleteAllTxtFile();
         this.proposers = new Proposer[] {
@@ -73,8 +93,6 @@ public class Voting {
 
     /*
     This is a failure test case
-    Failure happens on proposer3 right after it sends out a higher id PREPARE
-    Proposers will keeping out a new proposal with higher id in every 10 seconds
      */
     public void test2() throws IOException, InterruptedException {
         deleteAllTxtFile();
@@ -163,9 +181,15 @@ public class Voting {
     public void setNodeState() {
         for (Proposer p : proposers) {
             p.setMax_id((int) (Math.random() * 20));
+            if (p.port == 2011) continue; // the first proposer is active at all time
+            boolean isStable = (int) (Math.random() * 2) == 1;
+            p.setIsResponseStable(isStable);
         }
-        boolean isStable = (int) (Math.random() * 2) == 1;
-        proposer1.setIsResponseStable(isStable);
+
+        for (Acceptor a : acceptors) {
+            boolean isStable = (int) (Math.random() * 2) == 1;
+            a.setIsResponseStable(isStable);
+        }
     }
 
     public void startProposer(Proposer p) {
